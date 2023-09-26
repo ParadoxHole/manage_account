@@ -1,0 +1,8 @@
+Username
+szvtmqs13rt2l62vq8nf
+
+Password
+pscale_pw_IKY8xJBVBnHYrPNYWDr38sTh9JQJB6ppCFXncoVXmRY
+
+Command line
+mysql -h aws.connect.psdb.cloud -D manage_account -u szvtmqs13rt2l62vq8nf -ppscale_pw_IKY8xJBVBnHYrPNYWDr38sTh9JQJB6ppCFXncoVXmRY --ssl-mode=VERIFY_IDENTITY --ssl-ca=/etc/ssl/certs/ca-certificates.crt
