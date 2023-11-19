@@ -1,1 +1,1 @@
-module.exports = {secret: "secret-key"}
+module.exports ={ secret: "my-secret-key"};

@@ -1,7 +1,7 @@
 module.exports = app => {
-    const file_controller = require("../controllers/file.controller");
+    const file_controller = require("../controllers/file.controllers");
     var router = require("express").Router();
-    router.post("/upload", file_controller.upload);
-    router.get("/display/:name", file_controller.download);
+    router.post("/upload", file_controller.uploadController);
+    router.get("/:name", file_controller.displayAvatar);
     app.use("/api/file", router);
 };

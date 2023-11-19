@@ -1,151 +1,147 @@
-const sql = require('./db.js');
+const sql = require("./db");
 const jwt = require("jsonwebtoken");
-const scKey = require("../config/jwt.config.js");
-const bcrypt = require("bcryptjs");
-const expireTme = "2h";
+const scKey = require("../config/jwt.config");
+const bcrypt = require("bcryptjs/dist/bcrypt");
+const expireTime = "2h"; //token will expire in 2 hours
 const fs = require("fs");
 
-const User = function(user) {
+const User = function(user){
     this.fullname = user.fullname;
     this.email = user.email;
-    this.userName = user.userName;
+    this.username = user.username;
     this.password = user.password;
     this.img = user.img;
-};
-User.checkuserName = (userName, result) => {
-    sql.query("SELECT * FROM player WHERE userName = '"+userName+"'", (err, res) => {
-        if (err) {
-            console.log("error: ", err);
+}
+User.checkUsername = (username, result)=>{
+    sql.query("SELECT * FROM player WHERE username='"+username+"'",(err,res)=>{
+        if(err){
+            console.log("Error: " + err);
             result(err, null);
             return;
         }
-        if (res.length) {
-            console.log("found userName: ", res[0]);
-            result(null, true);
+        if(res.length){
+            console.log("Found username: " + res[0]);
+            result(null, res[0]);
             return;
         }
-        result({kind: "not_found"}, false);
+        result({ kind: "not_found"}, null);
     });
 };
 
 User.create = (newUser, result)=>{
-    sql.query("INSERT INTO player SET ?", newUser , (err, res)=>{
+    sql.query("INSERT INTO player SET ?", newUser, (err, res)=>{
         if(err){
-            console.log("Querry error: ", err);
+            console.log("Query error: " + err);
             result(err, null);
             return;
         }
-        const token = jwt.sign({id: res.insertId}, scKey.secret, {expiresIn: expireTme});
-        console.log("created user: ", {id: res.insertId, ...newUser, accessToken: token});
+        const token = jwt.sign({id: res.insertId}, scKey.secret, {expiresIn: expireTime});
         result(null, {id: res.insertId, ...newUser, accessToken: token});
+        console.log("Created user:", {id: res.insertId, ...newUser, accessToken: token});
     });
 };
 
 User.loginModel = (account, result)=>{
-    console.log(account.userName);
-    sql.query("SELECT * FROM player WHERE userName = ?", [account.userName], (err, res)=>{
+    sql.query("SELECT * FROM player WHERE username=?", [account.username], (err, res)=>{
         if(err){
-            console.log("Querry error: ", err);
+            console.log("err:" + err);
             result(err, null);
             return;
         }
         if(res.length){
             const validPassword = bcrypt.compareSync(account.password, res[0].password);
             if(validPassword){
-                const token = jwt.sign({id: res.insertId}, scKey.secret, {expiresIn: expireTme});
-                console.log("Login sucess. Token: ", token);
+                const token = jwt.sign({id: res.insertId}, scKey.secret, {expiresIn: expireTime});
+                console.log("Login success. Token: " + token);
                 res[0].accessToken = token;
                 result(null, res[0]);
-            } else {
-                console.log("Password invalid: ", res[0]);
-                result({kind: "invalid_password"}, null);
+                return;
+            }else{
+                console.log("Password not match");
+                result({kind: "invalid_pass"}, null);
+                return;
             }
-            return;
         }
         result({kind: "not_found"}, null);
-    }
-)};
-
-User.getAllRecords = (result) => {
-    sql.query("SELECT * FROM users", (err, res) => {
-        if (err) {
-            console.log("error: ", err);
-            result(null, err);
-            return;
-        }
-        console.log("users: ", res);
-        result(null, res);
     });
 };
 
-const removeOldImage = (id, result) => {
-    sql.query("SELECT img FROM player WHERE id = ?", id, (err, res)=>{
+User.getAllRecords = (result)=>{
+    sql.query("SELECT * FROM users", (err, res)=>{
         if(err){
-            console.log("error: ", err);
-            result(null, err);
+            console.log("Query err: " + err);
+            result(err,null);
+            return;
+        }
+        result(null, res);
+    });
+};
+//const, var, let => function scope
+const removeOldImage = (id, result) => {
+    sql.query("SELECT * FROM player WHERE id=?", [id], (err, res)=>{
+        if(err){
+            console.log("error:" + err);
+            result(err, null);
             return;
         }
         if(res.length){
-            let filePath = __basedir + "/assets/uploads/" + res[0].img;
+            let filePath = __basedir + "/assets/" + res[0].img;
             try {
                 if(fs.existsSync(filePath)){
-                    fs.unlinkSync(filePath, (err)=>{
+                    fs.unlink(filePath, (e)=>{
                         if(e){
-                            console.log("error: ", e);
+                            console.log("Error: " + e);
                             return;
                         }else{
-                            console.log("File: ", res[0].img, " removed.");
+                            console.log("File: " + res[0].img + " was removed");
                             return;
                         }
                     });
-                } else {
-                    console.log("File: " + res[0].img + " not found.");
+                }else {
+                    console.log("File: " + res[0].img + " not found.")
                     return;
                 }
             } catch (error) {
-                console.error(error);
+                console.log(error);
                 return;
             }
-            result(null, res[0].img);
-        } else {
-            result({kind: "not_found"}, null);
         }
     });
 };
 
-User.updateUser = (id, data, result) => {
+User.updateUser = (id, data, result)=>{
     removeOldImage(id);
-    sql.query("UPDATE player SET fullname=?, email=?, img=? WHERE id = ?", [data.fullname, data.email, data.img, id], (err, res)=>{
+    sql.query("UPDATE player SET fullname=?, email=?, img=? WHERE id=?", 
+    [data.fullname, data.email, data.img, id], (err, res)=>{
         if(err){
-            console.log("error: ", err);
-            result(null, err);
+            console.log("Error: " + err);
+            result(err, null);
             return;
         }
         if(res.affectedRows == 0){
+            //NO any record update
             result({kind: "not_found"}, null);
             return;
         }
-        console.log("updated user: ", {id: id, ...data});
+        console.log("Update user: " + {id: id, ...data});
         result(null, {id: id, ...data});
         return;
     });
-}
-
-User.deleteUser = (id, result) => {
+};
+User.removeUser = (id, result)=>{
     removeOldImage(id);
-    sql.query("DELETE FROM player WHERE id = ?", id, (err, res)=>{
+    sql.query("DELETE FROM player WHERE id=?", [id], (err, res)=>{
         if(err){
-            console.log("error: ", err);
-            result(null, err);
+            console.log("Query error: " + err);
+            result(err, null);
             return;
         }
         if(res.affectedRows == 0){
             result({kind: "not_found"}, null);
             return;
         }
-        console.log("deleted user: ", id);
-        result(null, res);
-    });
+        console.log("Deleted user id: " + id);
+        result(null, {id: id});
+    } );
 };
-
 module.exports = User;
