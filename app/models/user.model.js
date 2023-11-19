@@ -8,19 +8,19 @@ const fs = require("fs");
 const User = function(user) {
     this.fullname = user.fullname;
     this.email = user.email;
-    this.username = user.username;
+    this.userName = user.userName;
     this.password = user.password;
     this.img = user.img;
 };
-User.checkUsername = (username, result) => {
-    sql.query("SELECT * FROM users WHERE username = '"+username+"'", (err, res) => {
+User.checkuserName = (userName, result) => {
+    sql.query("SELECT * FROM player WHERE userName = '"+userName+"'", (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);
             return;
         }
         if (res.length) {
-            console.log("found username: ", res[0]);
+            console.log("found userName: ", res[0]);
             result(null, true);
             return;
         }
@@ -29,7 +29,7 @@ User.checkUsername = (username, result) => {
 };
 
 User.create = (newUser, result)=>{
-    sql.query("INSERT INTO users SET ?", newUser , (err, res)=>{
+    sql.query("INSERT INTO player SET ?", newUser , (err, res)=>{
         if(err){
             console.log("Querry error: ", err);
             result(err, null);
@@ -42,8 +42,8 @@ User.create = (newUser, result)=>{
 };
 
 User.loginModel = (account, result)=>{
-    console.log(account.username);
-    sql.query("SELECT * FROM users WHERE username = ?", [account.username], (err, res)=>{
+    console.log(account.userName);
+    sql.query("SELECT * FROM player WHERE userName = ?", [account.userName], (err, res)=>{
         if(err){
             console.log("Querry error: ", err);
             result(err, null);
@@ -79,7 +79,7 @@ User.getAllRecords = (result) => {
 };
 
 const removeOldImage = (id, result) => {
-    sql.query("SELECT img FROM users WHERE id = ?", id, (err, res)=>{
+    sql.query("SELECT img FROM player WHERE id = ?", id, (err, res)=>{
         if(err){
             console.log("error: ", err);
             result(null, err);
@@ -115,7 +115,7 @@ const removeOldImage = (id, result) => {
 
 User.updateUser = (id, data, result) => {
     removeOldImage(id);
-    sql.query("UPDATE users SET fullname=?, email=?, img=? WHERE id = ?", [data.fullname, data.email, data.img, id], (err, res)=>{
+    sql.query("UPDATE player SET fullname=?, email=?, img=? WHERE id = ?", [data.fullname, data.email, data.img, id], (err, res)=>{
         if(err){
             console.log("error: ", err);
             result(null, err);
@@ -133,7 +133,7 @@ User.updateUser = (id, data, result) => {
 
 User.deleteUser = (id, result) => {
     removeOldImage(id);
-    sql.query("DELETE FROM users WHERE id = ?", id, (err, res)=>{
+    sql.query("DELETE FROM player WHERE id = ?", id, (err, res)=>{
         if(err){
             console.log("error: ", err);
             result(null, err);
