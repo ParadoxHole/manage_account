@@ -13,7 +13,7 @@ const User = function(user){
     this.img = user.img;
 }
 User.checkUsername = (username, result)=>{
-    sql.query("SELECT * FROM player WHERE username='"+username+"'",(err,res)=>{
+    sql.query("SELECT * FROM player WHERE userName='"+username+"'",(err,res)=>{
         if(err){
             console.log("Error: " + err);
             result(err, null);
@@ -42,7 +42,7 @@ User.create = (newUser, result)=>{
 };
 
 User.loginModel = (account, result)=>{
-    sql.query("SELECT * FROM player WHERE username=?", [account.username], (err, res)=>{
+    sql.query("SELECT * FROM player WHERE userName=?", [account.username], (err, res)=>{
         if(err){
             console.log("err:" + err);
             result(err, null);
