@@ -13,7 +13,7 @@ const User = function(user){
     this.img = user.img;
 }
 User.checkUsername = (username, result)=>{
-    sql.query("SELECT * FROM rpsonline.player WHERE userName='"+username+"'",(err,res)=>{
+    sql.query("SELECT * FROM player WHERE userName='"+username+"'",(err,res)=>{
         if(err){
             console.log("Error: " + err);
             result(err, null);
@@ -29,7 +29,7 @@ User.checkUsername = (username, result)=>{
 };
 
 User.create = (newUser, result)=>{
-    sql.query("INSERT INTO rpsonline.player SET ?", newUser, (err, res)=>{
+    sql.query("INSERT INTO player SET ?", newUser, (err, res)=>{
         if(err){
             console.log("Query error: " + err);
             result(err, null);
@@ -42,7 +42,7 @@ User.create = (newUser, result)=>{
 };
 
 User.loginModel = (account, result)=>{
-    sql.query("SELECT * FROM rpsonline.player WHERE userName=?", [account.username], (err, res)=>{
+    sql.query("SELECT * FROM player WHERE userName=?", [account.username], (err, res)=>{
         if(err){
             console.log("err:" + err);
             result(err, null);
@@ -78,7 +78,7 @@ User.getAllRecords = (result)=>{
 };
 //const, var, let => function scope
 const removeOldImage = (id, result) => {
-    sql.query("SELECT * FROM rpsonline.player WHERE id=?", [id], (err, res)=>{
+    sql.query("SELECT * FROM player WHERE id=?", [id], (err, res)=>{
         if(err){
             console.log("error:" + err);
             result(err, null);
@@ -111,7 +111,7 @@ const removeOldImage = (id, result) => {
 
 User.updateUser = (id, data, result)=>{
     removeOldImage(id);
-    sql.query("UPDATE rpsonline.player SET fullname=?, email=?, img=? WHERE id=?", 
+    sql.query("UPDATE player SET fullname=?, email=?, img=? WHERE id=?", 
     [data.fullname, data.email, data.img, id], (err, res)=>{
         if(err){
             console.log("Error: " + err);
@@ -130,7 +130,7 @@ User.updateUser = (id, data, result)=>{
 };
 User.removeUser = (id, result)=>{
     removeOldImage(id);
-    sql.query("DELETE FROM rpsonline.player WHERE id=?", [id], (err, res)=>{
+    sql.query("DELETE FROM player WHERE id=?", [id], (err, res)=>{
         if(err){
             console.log("Query error: " + err);
             result(err, null);
